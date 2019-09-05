@@ -7,6 +7,9 @@ const credentials = {key: privateKey, cert: certificate};
 const bodyParser = require('body-parser');
 const express = require('express');
 const app = express();
+const mongoose = require('mongoose');
+
+mongoose.connect('mongodb+srv://aleksey:aleksey4321@goit-ttln5.mongodb.net/shop?retryWrites=true&w=majority', {useNewUrlParser: true});
 
 app.set('json spaces', 2);
 app.use(bodyParser.json());
