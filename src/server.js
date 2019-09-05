@@ -11,6 +11,39 @@ const mongoose = require('mongoose');
 
 mongoose.connect('mongodb+srv://aleksey:aleksey4321@goit-ttln5.mongodb.net/shop?retryWrites=true&w=majority', {useNewUrlParser: true});
 
+const User = mongoose.model('User', {
+  username: String,
+  telephone: String,
+  password: String,
+  email: String,
+  favoriteProducts: Array,
+  viewedProducts: Array,
+  orders: Array
+});
+
+const Order = mongoose.model('Order', {
+  creator: String,
+  productsList: Array,
+  deliveryType: String,
+  deliveryAdress: String,
+  sumToPay: Number,
+  status: String
+});
+
+const Product = mongoose.model('Product', {
+	_id: Number,
+	sku: Number,
+	name: String,
+	description: String,
+	price: Number,
+	currency: String,
+	creatorId: Number,
+	created: String,
+	modified: String,
+  categories: Array,
+  likes: Number
+});
+
 app.set('json spaces', 2);
 app.use(bodyParser.json());
 
@@ -57,11 +90,65 @@ const startServer = (httpPort, httpsPort) => {
   app.post('/signup', function (req, res) {
     let post = req.body;
     let body = JSON.stringify(post, null, 2);
-    let path = __dirname + '/db/users/' + post.username + '.json';
-    fs.writeFile(path, body, (err, result) => {
+
+    new User(post).save().then(() => {
       res.send({
         status: 'success',
         user: post
+      });
+    });
+  });
+
+  app.put('/user/:id', (req, res) => {
+    User.findById(req.params.id, (err, user) => {
+      if (req.body.favoriteProducts) {
+        user.favoriteProducts = req.body.favoriteProducts;
+      }
+      if (req.body.viewedProducts) {
+        user.viewedProducts = req.body.viewedProducts;
+      }
+      if (req.body.orders) {
+        user.orders = req.body.orders;
+      }
+
+      user.save().then(() => {
+        res.send({
+          status: "success", 
+          product: user
+         });
+      });
+    });
+  });
+
+  app.post('/orders', (req, res) => {
+    let order = req.body;
+    new Order(order).save().then(() => {
+      res.send({
+        status: "success", 
+        order: order
+       });
+    });
+  });
+
+  app.get('/orders/:id', (req, res) => {
+    Order.findById(req.params.id, (err, order) => {
+      res.send({
+        status: "success",
+        order: order
+      });
+    })
+  });
+
+  app.put('/products/:id', (req, res) => {
+    Product.findById(req.params.id, (err, prod) => {
+      for (let i in req.body) {
+        prod[i] = req.body[i];
+      }
+      prod.save().then(() => {
+        res.send({
+          status: 'success',
+          product: prod
+        });
       });
     });
   });
